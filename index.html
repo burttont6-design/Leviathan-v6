@@ -280,6 +280,8 @@ function render() {
   const rf = mc.recent_form || {};
   const loom = ss.loom_story || {};
   const beats = loom.beats || [];
+  const bc = ss.birth_context || {};
+  const birthPlats = bc.platforms || {};
 
   // Module vs line deltas
   const modDeltas = [];
@@ -406,19 +408,82 @@ function render() {
   }
 
   // LINE MOVEMENT + PLATFORMS
+  // Calculate actual movement from birth platforms vs current platforms
+  const curPlats = (plat.platforms) || {};
+  const hasBirthPlats = Object.keys(birthPlats).length > 0;
+  const hasCurPlats = Object.keys(curPlats).length > 0;
+
+  // Find the real min and max across all books for the bars
+  let allLines = [];
+  if (hasCurPlats) allLines.push(...Object.values(curPlats));
+  if (hasBirthPlats) {
+    Object.values(birthPlats).forEach(v => {
+      if (typeof v === 'object' && v !== null) allLines.push(v.line);
+      else if (typeof v === 'number') allLines.push(v);
+    });
+  }
+  const barMin = allLines.length ? Math.min(...allLines) * 0.9 : 0;
+  const barMax = allLines.length ? Math.max(...allLines) * 1.05 : 1;
+
+  // Compute real birth delta from platform movement
+  let realBirthDelta = mot.birth_delta || 0;
+  if (hasBirthPlats && hasCurPlats) {
+    let totalDelta = 0; let count = 0;
+    Object.keys(curPlats).forEach(book => {
+      const curVal = curPlats[book];
+      let birthVal = null;
+      if (birthPlats[book] !== undefined) {
+        birthVal = typeof birthPlats[book] === 'object' ? birthPlats[book].line : birthPlats[book];
+      }
+      if (birthVal !== null && birthVal !== undefined) {
+        totalDelta += (curVal - birthVal);
+        count++;
+      }
+    });
+    if (count > 0) realBirthDelta = totalDelta / count;
+  }
+
+  // Use best available birth/current
+  const displayBirth = mot.birth_line || line;
+  const displayCurrent = mot.current_line || line;
+  const displayDelta = realBirthDelta !== 0 ? realBirthDelta : (mot.birth_delta || 0);
+
   html += `<div class="card"><div class="section-label">Line Movement</div>
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-      <div><span style="color:#888;font-size:12px">Birth: </span><span class="mono" style="font-size:17px;font-weight:700;color:#e0e0e0">${mot.birth_line||'—'}</span></div>
-      <div style="color:${cl.direction==='UP'?'#00ff87':'#ff4757'};font-size:18px;font-weight:700">→ ${(mot.birth_delta||0)>0?'+':''}${mot.birth_delta||0}</div>
-      <div><span style="color:#888;font-size:12px">Now: </span><span class="mono" style="font-size:17px;font-weight:700;color:#fff">${mot.current_line||line}</span></div>
+      <div><span style="color:#888;font-size:12px">Birth: </span><span class="mono" style="font-size:17px;font-weight:700;color:#e0e0e0">${displayBirth}</span></div>
+      <div style="color:${displayDelta>0?'#00ff87':displayDelta<0?'#ff4757':'#888'};font-size:18px;font-weight:700">→ ${displayDelta>0?'+':''}${displayDelta.toFixed(1)}</div>
+      <div><span style="color:#888;font-size:12px">Now: </span><span class="mono" style="font-size:17px;font-weight:700;color:#fff">${displayCurrent}</span></div>
     </div>`;
-  if (plat.platforms) {
-    const entries = Object.entries(plat.platforms).sort((a,b)=>b[1]-a[1]);
-    const max = Math.max(...entries.map(e=>e[1]));
-    entries.forEach(([book,val]) => {
-      const pColor = val > plat.consensus_line ? '#ff6b6b' : val === plat.consensus_line ? '#ffd700' : '#4ecdc4';
-      const valColor = val > plat.consensus_line ? '#ff6b6b' : '#e0e0e0';
-      html += `<div class="platform-row"><span class="platform-name">${book}</span><div class="platform-track"><div class="platform-fill" style="width:${(val/(max*1.2))*100}%;background:linear-gradient(90deg,${pColor}88,${pColor})"></div></div><span class="platform-val" style="color:${valColor}">${val}</span></div>`;
+
+  // Per-book bars with birth → current delta
+  if (hasCurPlats) {
+    const books = Object.keys(curPlats).sort((a,b) => curPlats[b] - curPlats[a]);
+    books.forEach(book => {
+      const curVal = curPlats[book];
+      let birthVal = null;
+      if (birthPlats[book] !== undefined) {
+        birthVal = typeof birthPlats[book] === 'object' ? birthPlats[book].line : birthPlats[book];
+      }
+      const bookDelta = birthVal !== null && birthVal !== undefined ? curVal - birthVal : null;
+      const pColor = curVal > (plat.consensus_line||line) ? '#ff6b6b' : curVal === (plat.consensus_line||line) ? '#ffd700' : '#4ecdc4';
+      const barWidth = ((curVal - barMin) / (barMax - barMin)) * 100;
+
+      let deltaStr = '';
+      if (bookDelta !== null && bookDelta !== 0) {
+        const dColor = bookDelta > 0 ? '#00ff87' : '#ff4757';
+        deltaStr = `<span class="mono" style="color:${dColor};font-size:10px;margin-left:6px">${bookDelta>0?'+':''}${bookDelta.toFixed(1)}</span>`;
+      } else if (birthVal === null || birthVal === undefined) {
+        deltaStr = `<span style="color:#3498db;font-size:10px;margin-left:6px">NEW</span>`;
+      }
+
+      html += `<div class="platform-row">
+        <span class="platform-name">${book.toUpperCase()}</span>
+        <div class="platform-track">
+          <div class="platform-fill" style="width:${barWidth}%;background:linear-gradient(90deg,${pColor}88,${pColor})"></div>
+        </div>
+        <span class="platform-val">${curVal}</span>
+        ${deltaStr}
+      </div>`;
     });
   }
   html += `</div>`;
