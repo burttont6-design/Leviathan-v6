@@ -92,6 +92,9 @@ body {
 .platform-track { flex: 1; height: 14px; background: rgba(255,255,255,0.05); border-radius: 3px; overflow: hidden; }
 .platform-fill { height: 100%; border-radius: 3px; }
 .platform-val { width: 36px; text-align: right; font-size: 12px; font-family: 'JetBrains Mono', monospace; font-weight: 600; margin-left: 6px; }
+.platform-birth { width: 36px; text-align: right; font-size: 11px; font-family: 'JetBrains Mono', monospace; color: #555; margin-left: 4px; }
+.platform-arrow { font-size: 10px; color: #444; margin: 0 2px; }
+.platform-changes { font-size: 10px; color: #888; margin-left: 8px; font-family: 'JetBrains Mono', monospace; }
 
 /* Module delta rows */
 .mod-row { display: flex; align-items: center; gap: 6px; padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,0.03); }
@@ -456,6 +459,7 @@ function render() {
     </div>`;
 
   // Per-book bars with birth → current delta
+  const platformChanges = (bc.platform_line_changes) || {};
   if (hasCurPlats) {
     const books = Object.keys(curPlats).sort((a,b) => curPlats[b] - curPlats[a]);
     books.forEach(book => {
@@ -476,13 +480,32 @@ function render() {
         deltaStr = `<span style="color:#3498db;font-size:10px;margin-left:6px">NEW</span>`;
       }
 
+      // Birth line display
+      let birthStr = '';
+      if (birthVal !== null && birthVal !== undefined) {
+        birthStr = `<span class="platform-birth">${birthVal}</span><span class="platform-arrow">→</span>`;
+      }
+
+      // Inline change history from platform_line_changes
+      let changesStr = '';
+      const bookChanges = platformChanges[book] || platformChanges[book.toLowerCase()] || [];
+      if (bookChanges.length > 0) {
+        const steps = bookChanges.map(ch => {
+          const chColor = ch.change_from !== undefined ? (ch.line > ch.change_from ? '#00ff87' : '#ff4757') : '#888';
+          return `<span style="color:${chColor}">${ch.line}</span>`;
+        });
+        changesStr = `<span class="platform-changes">[${steps.join(' → ')}]</span>`;
+      }
+
       html += `<div class="platform-row">
         <span class="platform-name">${book.toUpperCase()}</span>
         <div class="platform-track">
           <div class="platform-fill" style="width:${barWidth}%;background:linear-gradient(90deg,${pColor}88,${pColor})"></div>
         </div>
+        ${birthStr}
         <span class="platform-val">${curVal}</span>
         ${deltaStr}
+        ${changesStr}
       </div>`;
     });
   }
