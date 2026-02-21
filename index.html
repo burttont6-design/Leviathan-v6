@@ -73,7 +73,7 @@ body {
 /* Stat boxes */
 .stat-row { display: flex; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
 .stat-box {
-  flex: 1; min-width: 75px; background: #12121a; border: 1px solid #222;
+  flex: 1; min-width: 88px; background: #12121a; border: 1px solid #222;
   border-radius: 12px; padding: 14px 8px; text-align: center;
 }
 .stat-label { font-size: 10px; color: #666; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
@@ -131,7 +131,7 @@ body {
 }
 .net-value { font-size: 40px; font-weight: 700; font-family: 'JetBrains Mono', monospace; line-height: 1; }
 .net-dir { font-size: 16px; font-weight: 700; margin-top: 4px; }
-.net-stats { display: flex; justify-content: center; gap: 20px; margin-top: 12px; }
+.net-stats { display: flex; justify-content: center; gap: 20px; margin-top: 12px; flex-wrap: wrap; }
 .net-stat-label { font-size: 10px; color: #555; }
 .net-stat-val { font-size: 15px; font-weight: 700; font-family: 'JetBrains Mono', monospace; color: #e0e0e0; }
 
@@ -247,378 +247,416 @@ function sigC(s) { return {REVERSE:'#ff6b6b',SNAPBACK:'#ffd700',CONFIRM:'#00ff87
 function bucketC(b) { return {HIGH:'#00ff87',MEDIUM:'#ffd700',LOW:'#ff4757'}[b]||'#a0a0a0'; }
 function flagC(f) { return {STEAM:'#ff6b6b',SHARP_CONSENSUS:'#ff9f43',CROSSBOOK:'#ffd700',FOLLOW:'#4ecdc4',TENSION:'#ff4757',STALE_LINE:'#a0a0a0',REVERSE:'#ff6b6b',DRIFT:'#a0a0a0',FIRST_BOVADA:'#3498db',FIRST_PP:'#3498db',FIRST_FD:'#3498db',FIRST_DK:'#3498db',ASYM:'#9b59b6',MAG_FADE:'#e74c3c',PP_STALE:'#a0a0a0',TOTAL_MOVE_UP:'#00ff87',TOTAL_MOVE_DOWN:'#ff4757',TOTAL_ALIGNED_PROP:'#ffd700'}[f]||'#555'; }
 function beatC(b) { return {LINEUP_CHANGE:'#4ecdc4',LINE_MOVE:'#ffd700',ENGINE_STATE:'#ff6b6b',OPERATOR_STATE:'#9b59b6'}[b]||'#555'; }
+function hitC(hr) {
+  if (hr == null || isNaN(hr)) return '#888';
+  return hr >= 55 ? '#00ff87' : hr >= 48 ? '#ffd700' : '#ff4757';
+}
 
 function render() {
   try {
-  const d = currentCard;
-  const id = d.identity || d.locked_identity || {};
-  const li = d.locked_identity || {};
-  const ss = d.state_snapshot || {};
-  const cl = ss.classification || {};
-  const mc = ss.matchup_context || {};
-  const lms = ss.line_movement_scoring || {};
-  const mot = ss.motion_context || {};
-  const plat = ss.current_platforms || {};
-  const stab = ss.stability || {};
-  const dc = ss.decision_context || {};
-  const vp = ss.verdict_payload || {};
-  const qual = vp.quality || {};
-  const lat = ss.lattice || {};
-  const conf = d.confidence_breakdown || {};
-  const flags = cl.signal_flags || cl.reason_flags || [];
-  const rb = cl.regime_basis || dc.regime_basis || {};
-  const contextFlags = (rb && rb.context_flags) || [];
-  const line = li.line || dc.line || vp.line || mot.current_line || 0;
-  const modules = mc.all_modules || {};
-  const urdr = (ss.birth_context && ss.birth_context.urdr_belief) || (vp && vp.birth_context && vp.birth_context.urdr_belief) || {};
-  const cp = urdr.chronicle_payload || {};
-  const urdrMods = cp.modules || [];
-  const agg = cp.aggregate || {};
-  const netDelta = agg.net_delta_logit_over ?? urdr.chronicle_net_delta ?? null;
-  const weightedDelta = agg.weighted_delta_logit_over ?? 0;
-  const activeMods = urdrMods.filter(m => m.delta_logit_over !== 0);
-  const zeroMods = urdrMods.filter(m => m.delta_logit_over === 0);
-  const projDir = ss.projection_direction;
-  const ge = mc.game_environment || {};
-  const rf = mc.recent_form || {};
-  const loom = ss.loom_story || {};
-  const beats = loom.beats || [];
-  const bc = ss.birth_context || {};
-  const birthPlats = bc.platforms || {};
+    const d = currentCard;
+    const id = d.identity || d.locked_identity || {};
+    const li = d.locked_identity || {};
+    const ss = d.state_snapshot || {};
+    const cl = ss.classification || {};
+    const mc = ss.matchup_context || {};
+    const lms = ss.line_movement_scoring || {};
+    const mot = ss.motion_context || {};
+    const plat = ss.current_platforms || {};
+    const stab = ss.stability || {};
+    const dc = ss.decision_context || {};
+    const vp = ss.verdict_payload || {};
+    const qual = vp.quality || {};
+    const lat = ss.lattice || {};
+    const conf = d.confidence_breakdown || {};
+    const flags = cl.signal_flags || cl.reason_flags || [];
+    const rb = cl.regime_basis || dc.regime_basis || {};
+    const contextFlags = (rb && rb.context_flags) || [];
+    const line = li.line || dc.line || vp.line || mot.current_line || 0;
+    const modules = mc.all_modules || {};
+    const urdr = (ss.birth_context && ss.birth_context.urdr_belief) || (vp && vp.birth_context && vp.birth_context.urdr_belief) || {};
+    const cp = urdr.chronicle_payload || {};
+    const urdrMods = cp.modules || [];
+    const agg = cp.aggregate || {};
+    const netDelta = agg.net_delta_logit_over ?? urdr.chronicle_net_delta ?? null;
+    const weightedDelta = agg.weighted_delta_logit_over ?? 0;
+    const activeMods = urdrMods.filter(m => m.delta_logit_over !== 0);
+    const zeroMods = urdrMods.filter(m => m.delta_logit_over === 0);
+    const projDir = ss.projection_direction;
+    const ge = mc.game_environment || {};
+    const rf = mc.recent_form || {};
+    const loom = ss.loom_story || {};
+    const beats = loom.beats || [];
+    const bc = ss.birth_context || {};
+    const birthPlats = bc.platforms || {};
 
-  // Module vs line deltas
-  const modDeltas = [];
-  if (modules.SEASON_AVG) modDeltas.push({label:'Season Avg', value:modules.SEASON_AVG.season_avg, line});
-  if (modules.L10_AVG) modDeltas.push({label:'L10 Avg', value:modules.L10_AVG.l10_avg, line});
-  if (modules.L5_AVG) modDeltas.push({label:'L5 Avg', value:modules.L5_AVG.l5_avg, line});
-  if (modules.PLAYER_VS_TEAM) modDeltas.push({label:`vs ${modules.PLAYER_VS_TEAM.opponent} (${modules.PLAYER_VS_TEAM.games_vs}g)`, value:modules.PLAYER_VS_TEAM.avg_vs_team, line});
-  if (modules.HOME_AWAY) modDeltas.push({label:mc.is_home?'Home Avg':'Away Avg', value:mc.is_home?modules.HOME_AWAY.home_avg:modules.HOME_AWAY.away_avg, line});
-  const overCount = modDeltas.filter(m=>m.value>line).length;
-  const underCount = modDeltas.filter(m=>m.value<line).length;
+    // EDGE QUALITY extraction (the hidden hit-rate layer)
+    const edgeMod =
+      urdrMods.find(m => m.module_code === 'EDGE_QUALITY') ||
+      urdrMods.find(m => (m.code || '').includes('EDGE') && m.data && (m.data.hit_rate != null || m.data.edge_bucket));
+    const edgeData = (edgeMod && edgeMod.data) ? edgeMod.data : null;
+    const edgeHit = edgeData && edgeData.hit_rate != null ? Number(edgeData.hit_rate) : null;
+    const edgeN   = edgeData && edgeData.sample_size != null ? Number(edgeData.sample_size) : null;
+    const edgeBucket = edgeData && edgeData.edge_bucket ? String(edgeData.edge_bucket) : null;
+    const edgePct = edgeData && edgeData.edge_pct != null ? Number(edgeData.edge_pct) : null;
+    const edgeHook = edgeData && edgeData.hook_line != null ? !!edgeData.hook_line : null;
+    const edgeCode = edgeMod && edgeMod.code ? String(edgeMod.code) : null;
 
-  // Find form code from urdr modules
-  const formMod = urdrMods.find(m => m.code && m.code.startsWith('RECENT_FORM'));
-  const formCode = formMod ? formMod.code.replace('RECENT_FORM_','') : null;
+    // Module vs line deltas
+    const modDeltas = [];
+    if (modules.SEASON_AVG) modDeltas.push({label:'Season Avg', value:modules.SEASON_AVG.season_avg, line});
+    if (modules.L10_AVG) modDeltas.push({label:'L10 Avg', value:modules.L10_AVG.l10_avg, line});
+    if (modules.L5_AVG) modDeltas.push({label:'L5 Avg', value:modules.L5_AVG.l5_avg, line});
+    if (modules.PLAYER_VS_TEAM) modDeltas.push({label:`vs ${modules.PLAYER_VS_TEAM.opponent} (${modules.PLAYER_VS_TEAM.games_vs}g)`, value:modules.PLAYER_VS_TEAM.avg_vs_team, line});
+    if (modules.HOME_AWAY) modDeltas.push({label:mc.is_home?'Home Avg':'Away Avg', value:mc.is_home?modules.HOME_AWAY.home_avg:modules.HOME_AWAY.away_avg, line});
+    const overCount = modDeltas.filter(m=>m.value>line).length;
+    const underCount = modDeltas.filter(m=>m.value<line).length;
 
-  let html = '';
+    // Find form code from urdr modules
+    const formMod = urdrMods.find(m => m.code && m.code.startsWith('RECENT_FORM'));
+    const formCode = formMod ? formMod.code.replace('RECENT_FORM_','') : null;
 
-  // PLAYER HEADER
-  const dirColor = projDir === 'OVER' ? '#00ff87' : projDir === 'UNDER' ? '#ff4757' : '#888';
-  const mktColor = cl.direction === 'UP' ? '#00ff87' : '#ff4757';
-  html += `<div class="card-gradient">
-    <div style="display:flex;justify-content:space-between;align-items:flex-start">
-      <div>
-        <h2 style="font-size:22px;font-weight:700;color:#fff">${id.player||'Unknown'}</h2>
-        <p style="color:#888;font-size:13px;margin-top:3px">${id.team||''} vs ${li.opponent||mc.opponent||'—'} · ${STAT_NAMES[id.stat]||id.stat||''} · ${id.date||''}</p>
-      </div>
-      <div style="text-align:right">
-        <div class="mono" style="font-size:34px;font-weight:700;color:#fff">${line}</div>
-        <div style="font-size:11px;color:#888">LINE</div>
-      </div>
-    </div>
-    <div style="display:flex;gap:6px;margin-top:14px;flex-wrap:wrap">
-      <span class="pill" style="background:${dirColor}22;color:${dirColor};border:1px solid ${dirColor}44">MODEL: ${projDir||'—'}</span>
-      <span class="pill" style="background:${mktColor}22;color:${mktColor};border:1px solid ${mktColor}44">MARKET: ${cl.direction||'—'}</span>
-      <span class="pill" style="background:${sigC(cl.signal_code)}22;color:${sigC(cl.signal_code)};border:1px solid ${sigC(cl.signal_code)}44">${cl.signal_code||'—'}</span>
-      <span class="pill" style="background:#ffd70022;color:#ffd700;border:1px solid #ffd70044">${vp.tier||d.action_tier_hint||'—'}</span>
-    </div>
-  </div>`;
+    let html = '';
 
-  // MARKET SIGNALS — flags from the card + signal code + relationship
-  html += `<div class="card" style="border:1px solid #333;background:linear-gradient(135deg,#0f0f1a,#151520)">
-    <div class="section-label" style="color:#888;font-size:12px;letter-spacing:2px;margin-bottom:12px">⚡ MARKET SIGNALS</div>`;
-  
-  // Signal flags (the main ones)
-  html += `<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px">`;
-  if (flags.length > 0) {
-    flags.forEach(f => {
-      html += `<span class="flag-pill" style="background:${flagC(f)}22;color:${flagC(f)};border:1px solid ${flagC(f)}55;font-size:12px;padding:5px 12px">${f}</span>`;
-    });
-  } else {
-    html += `<span style="color:#555;font-size:11px;font-style:italic">No signal flags</span>`;
-  }
-  html += `</div>`;
+    // PLAYER HEADER
+    const dirColor = projDir === 'OVER' ? '#00ff87' : projDir === 'UNDER' ? '#ff4757' : '#888';
+    const mktColor = cl.direction === 'UP' ? '#00ff87' : '#ff4757';
 
-  // Context flags
-  if (contextFlags.length > 0) {
-    html += `<div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px">`;
-    contextFlags.forEach(f => {
-      html += `<span class="flag-pill" style="background:#9b59b622;color:#9b59b6;border:1px solid #9b59b644;font-size:11px;padding:3px 10px">${f}</span>`;
-    });
-    html += `</div>`;
-  }
-  
-  // Market vs Model summary
-  html += `<div style="padding-top:8px;border-top:1px solid rgba(255,255,255,0.06);display:flex;justify-content:space-between;align-items:center">
-    <div style="font-size:12px;color:#888">Market says <strong style="color:${mktColor}">${cl.direction||'—'}</strong> · Model says <strong style="color:${dirColor}">${projDir||'—'}</strong></div>
-    <span class="pill" style="font-size:11px;padding:3px 10px;background:${dc.relationship==='FADE'?'#ff9f4322':dc.relationship==='CONFIRM'?'#00ff8722':'#55555522'};color:${dc.relationship==='FADE'?'#ff9f43':dc.relationship==='CONFIRM'?'#00ff87':'#888'};border:1px solid ${dc.relationship==='FADE'?'#ff9f4344':dc.relationship==='CONFIRM'?'#00ff8744':'#55555544'}">${dc.relationship||'—'}</span>
-  </div>`;
-  
-  html += `</div>`;
-
-  // STAT BOXES — Confidence, Regime+Relationship, LM Score, Birth Delta
-  const confVal = conf.model_confidence || cl.confidence || 0;
-  const bdColor = (mot.birth_delta||0) > 0 ? '#00ff87' : (mot.birth_delta||0) < 0 ? '#ff4757' : '#888';
-  html += `<div class="stat-row">
-    <div class="stat-box">
-      <div class="stat-label">Confidence</div>
-      <div class="stat-value" style="color:${c(confVal)}">${(confVal*100).toFixed(0)}%</div>
-      <div class="stat-sub" style="color:#555">${stab.stability_state||'—'}</div>
-    </div>
-    <div class="stat-box">
-      <div class="stat-label">Regime</div>
-      <div style="font-size:22px;font-weight:700;color:${regimeC(cl.regime_tag)}">${cl.regime_tag||'—'}</div>
-      <div class="stat-sub" style="color:${sigC(dc.relationship)};font-weight:700">${dc.relationship||'—'}</div>
-    </div>
-    <div class="stat-box">
-      <div class="stat-label">LM Score</div>
-      <div class="stat-value" style="color:${bucketC(lms.bucket)}">${(lms.score||0).toFixed(1)}</div>
-      <div class="stat-sub" style="color:${bucketC(lms.bucket)}">${lms.bucket||'—'}</div>
-    </div>
-    <div class="stat-box">
-      <div class="stat-label">Birth Δ</div>
-      <div class="stat-value" style="color:${bdColor}">${(mot.birth_delta||0)>0?'+':''}${mot.birth_delta||0}</div>
-      <div class="stat-sub" style="color:#555">${cl.velocity||'—'}</div>
-    </div>
-  </div>`;
-
-  // GAME PRESSURE
-  let pressureItems = '';
-  if (rb.moneyline_delta) pressureItems += `<div class="pressure-item"><div class="pressure-label">ML DELTA</div><div class="pressure-value" style="color:${rb.moneyline_delta<0?'#ff9f43':'#4ecdc4'}">${rb.moneyline_delta>0?'+':''}${rb.moneyline_delta}</div></div>`;
-  if (rb.total_delta) pressureItems += `<div class="pressure-item"><div class="pressure-label">TOTAL Δ</div><div class="pressure-value" style="color:#e0e0e0">${rb.total_delta>0?'+':''}${rb.total_delta}</div></div>`;
-  if (ge.spread) pressureItems += `<div class="pressure-item"><div class="pressure-label">SPREAD</div><div class="pressure-value" style="color:#e0e0e0">${ge.spread}</div></div>`;
-  if (ge.environment) pressureItems += `<div class="pressure-item"><div class="pressure-label">GAME ENV</div><div style="font-size:13px;font-weight:700;color:${ge.environment==='BLOWOUT_LIKELY'?'#ff4757':ge.environment==='COMFORTABLE'?'#4ecdc4':'#ffd700'}">${ge.environment}</div></div>`;
-  if (ge.blowout_prob!=null) pressureItems += `<div class="pressure-item"><div class="pressure-label">BLOWOUT %</div><div class="pressure-value" style="color:${ge.blowout_prob>0.4?'#ff4757':'#4ecdc4'}">${(ge.blowout_prob*100).toFixed(0)}%</div></div>`;
-  if (formCode) pressureItems += `<div class="pressure-item"><div class="pressure-label">FORM</div><div style="font-size:13px;font-weight:700;color:${formCode.includes('HOT')?'#00ff87':formCode.includes('COLD')?'#ff4757':'#ffd700'}">${formCode}</div></div>`;
-  if (rf.cv!=null) pressureItems += `<div class="pressure-item"><div class="pressure-label">CV (STREAK)</div><div class="pressure-value" style="color:#e0e0e0">${rf.cv.toFixed(3)}</div></div>`;
-  if (pressureItems) html += `<div class="card"><div class="section-label">Game Pressure</div><div class="pressure-row">${pressureItems}</div></div>`;
-
-  // (flags now shown in Market Signals section above)
-
-  // STORY TIMELINE
-  if (beats.length > 0) {
-    let beatsHtml = '';
-    beats.forEach(b => {
-      const color = beatC(b.beat_type);
-      const facts = b.facts || {};
-      let detail = '';
-      if (b.beat_type === 'LINEUP_CHANGE') detail = `${facts.player_name||'?'} → ${facts.change_type||'?'}`;
-      else if (b.beat_type === 'LINE_MOVE') detail = `${facts.snapshot_type||'?'}: ${facts.previous_value||'?'} → ${facts.value||'?'} (${facts.delta>0?'+':''}${facts.delta||0})`;
-      beatsHtml += `<div class="beat"><div class="beat-dot" style="background:${color}"></div><span class="beat-type" style="color:${color}">${b.beat_type}</span><span class="beat-detail">${detail}</span></div>`;
-    });
-    html += `<div class="card"><div class="section-label">Signal Story</div>${loom.headline?`<div style="font-size:12px;color:#e0e0e0;margin-bottom:10px;font-style:italic">"${loom.headline}"</div>`:''}
-    <div class="timeline"><div class="timeline-line"></div>${beatsHtml}</div></div>`;
-  }
-
-  // LINE MOVEMENT + PLATFORMS
-  // Calculate actual movement from birth platforms vs current platforms
-  const curPlats = (plat.platforms) || {};
-  const hasBirthPlats = Object.keys(birthPlats).length > 0;
-  const hasCurPlats = Object.keys(curPlats).length > 0;
-
-  // Find the real min and max across all books for the bars
-  let allLines = [];
-  if (hasCurPlats) allLines.push(...Object.values(curPlats));
-  if (hasBirthPlats) {
-    Object.values(birthPlats).forEach(v => {
-      if (typeof v === 'object' && v !== null) allLines.push(v.line);
-      else if (typeof v === 'number') allLines.push(v);
-    });
-  }
-  const barMin = allLines.length ? Math.min(...allLines) * 0.9 : 0;
-  const barMax = allLines.length ? Math.max(...allLines) * 1.05 : 1;
-
-  // Compute real birth delta from platform movement
-  let realBirthDelta = mot.birth_delta || 0;
-  if (hasBirthPlats && hasCurPlats) {
-    let totalDelta = 0; let count = 0;
-    Object.keys(curPlats).forEach(book => {
-      const curVal = curPlats[book];
-      let birthVal = null;
-      if (birthPlats[book] !== undefined) {
-        birthVal = typeof birthPlats[book] === 'object' ? birthPlats[book].line : birthPlats[book];
-      }
-      if (birthVal !== null && birthVal !== undefined) {
-        totalDelta += (curVal - birthVal);
-        count++;
-      }
-    });
-    if (count > 0) realBirthDelta = totalDelta / count;
-  }
-
-  // Use best available birth/current
-  const displayBirth = mot.birth_line || line;
-  const displayCurrent = mot.current_line || line;
-  const displayDelta = realBirthDelta !== 0 ? realBirthDelta : (mot.birth_delta || 0);
-
-  html += `<div class="card"><div class="section-label">Line Movement</div>
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-      <div><span style="color:#888;font-size:12px">Birth: </span><span class="mono" style="font-size:17px;font-weight:700;color:#e0e0e0">${displayBirth}</span></div>
-      <div style="color:${displayDelta>0?'#00ff87':displayDelta<0?'#ff4757':'#888'};font-size:18px;font-weight:700">→ ${displayDelta>0?'+':''}${displayDelta.toFixed(1)}</div>
-      <div><span style="color:#888;font-size:12px">Now: </span><span class="mono" style="font-size:17px;font-weight:700;color:#fff">${displayCurrent}</span></div>
-    </div>`;
-
-  // Per-book bars with birth → current delta
-  const platformChanges = (bc.platform_line_changes) || {};
-  if (hasCurPlats) {
-    const books = Object.keys(curPlats).sort((a,b) => curPlats[b] - curPlats[a]);
-    books.forEach(book => {
-      const curVal = curPlats[book];
-      let birthVal = null;
-      if (birthPlats[book] !== undefined) {
-        birthVal = typeof birthPlats[book] === 'object' ? birthPlats[book].line : birthPlats[book];
-      }
-      const bookDelta = birthVal !== null && birthVal !== undefined ? curVal - birthVal : null;
-      const pColor = curVal > (plat.consensus_line||line) ? '#ff6b6b' : curVal === (plat.consensus_line||line) ? '#ffd700' : '#4ecdc4';
-      const barWidth = ((curVal - barMin) / (barMax - barMin)) * 100;
-
-      let deltaStr = '';
-      if (bookDelta !== null && bookDelta !== 0) {
-        const dColor = bookDelta > 0 ? '#00ff87' : '#ff4757';
-        deltaStr = `<span class="mono" style="color:${dColor};font-size:10px;margin-left:6px">${bookDelta>0?'+':''}${bookDelta.toFixed(1)}</span>`;
-      } else if (birthVal === null || birthVal === undefined) {
-        deltaStr = `<span style="color:#3498db;font-size:10px;margin-left:6px">NEW</span>`;
-      }
-
-      // Birth line display
-      let birthStr = '';
-      if (birthVal !== null && birthVal !== undefined) {
-        birthStr = `<span class="platform-birth">${birthVal}</span><span class="platform-arrow">→</span>`;
-      }
-
-      // Inline change history from platform_line_changes
-      let changesStr = '';
-      const bookChanges = platformChanges[book] || platformChanges[book.toLowerCase()] || [];
-      if (bookChanges.length > 0) {
-        const steps = bookChanges.map(ch => {
-          const chColor = ch.change_from !== undefined ? (ch.line > ch.change_from ? '#00ff87' : '#ff4757') : '#888';
-          return `<span style="color:${chColor}">${ch.line}</span>`;
-        });
-        changesStr = `<span class="platform-changes">[${steps.join(' → ')}]</span>`;
-      }
-
-      html += `<div class="platform-row">
-        <span class="platform-name">${book.toUpperCase()}</span>
-        <div class="platform-track">
-          <div class="platform-fill" style="width:${barWidth}%;background:linear-gradient(90deg,${pColor}88,${pColor})"></div>
+    html += `<div class="card-gradient">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start">
+        <div>
+          <h2 style="font-size:22px;font-weight:700;color:#fff">${id.player||'Unknown'}</h2>
+          <p style="color:#888;font-size:13px;margin-top:3px">${id.team||''} vs ${li.opponent||mc.opponent||'—'} · ${STAT_NAMES[id.stat]||id.stat||''} · ${id.date||''}</p>
         </div>
-        ${birthStr}
-        <span class="platform-val">${curVal}</span>
-        ${deltaStr}
-        ${changesStr}
-      </div>`;
-    });
-  }
-  html += `</div>`;
-
-  // MODULE BREAKDOWN (vs line)
-  html += `<div class="card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-    <div class="section-label" style="margin-bottom:0">Module Breakdown</div>
-    <div style="font-size:12px"><span style="color:#00ff87;font-weight:700">${overCount} OVER</span><span style="color:#555;margin:0 5px">|</span><span style="color:#ff4757;font-weight:700">${underCount} UNDER</span></div>
-  </div>`;
-  modDeltas.forEach(m => {
-    const delta = m.value - m.line;
-    const dir = delta > 0 ? 'OVER' : delta < 0 ? 'UNDER' : 'PUSH';
-    const dColor = dir==='OVER'?'#00ff87':dir==='UNDER'?'#ff4757':'#a0a0a0';
-    html += `<div class="simple-row"><span class="simple-label">${m.label}</span><span class="simple-val">${typeof m.value==='number'?m.value.toFixed(1):m.value}</span><span class="simple-delta" style="color:${dColor}">${delta>0?'+':''}${delta.toFixed(1)} ${dir}</span></div>`;
-  });
-  // Context pills
-  let ctxHtml = '';
-  if (modules.REST && modules.REST.is_b2b) ctxHtml += `<span class="ctx-pill" style="background:#ff475722;color:#ff4757">B2B</span>`;
-  if (modules.REST && !modules.REST.is_b2b && modules.REST.days_rest > 1) ctxHtml += `<span class="ctx-pill" style="background:#00ff8722;color:#00ff87">REST: ${modules.REST.days_rest}d</span>`;
-  if (modules.DEFENSE) ctxHtml += `<span class="ctx-pill" style="background:${modules.DEFENSE.tier==='POOR'||modules.DEFENSE.tier==='WEAK'?'#00ff8722':'#55555522'};color:${modules.DEFENSE.tier==='POOR'||modules.DEFENSE.tier==='WEAK'?'#00ff87':'#888'}">DEF: ${modules.DEFENSE.tier} (#${modules.DEFENSE.defense_rank})</span>`;
-  if (ge.environment) ctxHtml += `<span class="ctx-pill" style="background:#ffd70022;color:#ffd700">${ge.environment} (${(ge.blowout_prob*100).toFixed(0)}%)</span>`;
-  if (ge.player_role) ctxHtml += `<span class="ctx-pill" style="background:#55555522;color:#888">ROLE: ${ge.player_role}</span>`;
-  if (ctxHtml) html += `<div class="ctx-pills">${ctxHtml}</div>`;
-  html += `</div>`;
-
-  // NET DELTA GAUGE
-  if (netDelta !== null) {
-    const ndColor = netDelta > 0 ? '#00ff87' : netDelta < 0 ? '#ff4757' : '#888';
-    const ndDir = netDelta > 0 ? 'OVER' : netDelta < 0 ? 'UNDER' : 'NEUTRAL';
-    const mismatch = projDir && ndDir !== projDir && ndDir !== 'NEUTRAL';
-    html += `<div class="net-gauge" style="background:${mismatch?'linear-gradient(135deg,#12121a,#2a1a1a)':'linear-gradient(135deg,#12121a,#1a1a2e)'};border:2px solid ${mismatch?'#ff6b6b66':ndColor+'44'}">
-      <div class="section-label">Net Delta</div>
-      <div class="net-value" style="color:${ndColor}">${netDelta>0?'+':''}${netDelta.toFixed(4)}</div>
-      <div class="net-dir" style="color:${ndColor}">${ndDir}</div>
-      ${mismatch?`<div class="mismatch"><span>⚠ MISMATCH — Net Delta says ${ndDir} but Projection says ${projDir}</span></div>`:''}
-      <div class="net-stats">
-        <div><div class="net-stat-label">WEIGHTED</div><div class="net-stat-val">${weightedDelta>0?'+':''}${weightedDelta.toFixed(4)}</div></div>
-        <div><div class="net-stat-label">MODULES</div><div class="net-stat-val">${agg.non_zero_modules||0}/15</div></div>
-        <div><div class="net-stat-label">AVG RELIABILITY</div><div class="net-stat-val">${((agg.avg_reliability||0)*100).toFixed(1)}%</div></div>
+        <div style="text-align:right">
+          <div class="mono" style="font-size:34px;font-weight:700;color:#fff">${line}</div>
+          <div style="font-size:11px;color:#888">LINE</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:6px;margin-top:14px;flex-wrap:wrap">
+        <span class="pill" style="background:${dirColor}22;color:${dirColor};border:1px solid ${dirColor}44">MODEL: ${projDir||'—'}</span>
+        <span class="pill" style="background:${mktColor}22;color:${mktColor};border:1px solid ${mktColor}44">MARKET: ${cl.direction||'—'}</span>
+        <span class="pill" style="background:${sigC(cl.signal_code)}22;color:${sigC(cl.signal_code)};border:1px solid ${sigC(cl.signal_code)}44">${cl.signal_code||'—'}</span>
+        <span class="pill" style="background:#ffd70022;color:#ffd700;border:1px solid #ffd70044">${vp.tier||d.action_tier_hint||'—'}</span>
       </div>
     </div>`;
-  }
 
-  // MODULE DELTA BARS
-  if (urdrMods.length > 0) {
-    html += `<div class="card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-      <div class="section-label" style="margin-bottom:0">Module Delta Logit (OVER ←→ UNDER)</div>
-      <div style="font-size:10px;color:#555">reliability →</div>
-    </div>`;
-    const maxD = 0.6;
-    activeMods.forEach(m => {
-      const d = m.delta_logit_over;
-      const pct = Math.min(Math.abs(d)/maxD,1)*100;
-      const isOver = d > 0;
-      const color = isOver ? '#00ff87' : '#ff4757';
-      const relColor = m.reliability > 0.7 ? '#4ecdc4' : m.reliability > 0.4 ? '#ffd700' : '#555';
-      const fillStyle = isOver ? `left:50%;width:${pct/2}%` : `right:50%;width:${pct/2}%`;
-      html += `<div class="mod-row">
-        <span class="mod-name">${m.code.replace(/_/g,' ')}</span>
-        <div class="mod-track"><div class="mod-center"></div><div class="mod-fill" style="${fillStyle};background:${color}aa"></div></div>
-        <span class="mod-val" style="color:${color}">${d>0?'+':''}${d.toFixed(4)}</span>
-        <span class="mod-rel" style="color:${relColor}">${(m.reliability*100).toFixed(0)}%</span>
-      </div>`;
-    });
-    if (zeroMods.length > 0) {
-      html += `<div class="zero-mods">ZERO IMPACT: ${zeroMods.map(m=>m.code.replace(/_/g,' ')).join(', ')}</div>`;
+    // MARKET SIGNALS
+    html += `<div class="card" style="border:1px solid #333;background:linear-gradient(135deg,#0f0f1a,#151520)">
+      <div class="section-label" style="color:#888;font-size:12px;letter-spacing:2px;margin-bottom:12px">⚡ MARKET SIGNALS</div>`;
+
+    html += `<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px">`;
+    if (flags.length > 0) {
+      flags.forEach(f => {
+        html += `<span class="flag-pill" style="background:${flagC(f)}22;color:${flagC(f)};border:1px solid ${flagC(f)}55;font-size:12px;padding:5px 12px">${f}</span>`;
+      });
+    } else {
+      html += `<span style="color:#555;font-size:11px;font-style:italic">No signal flags</span>`;
     }
     html += `</div>`;
-  }
 
-  // QUALITY GATES
-  if (qual.gate_a || qual.gate_b || qual.gate_c) {
-    html += `<div class="card"><div class="section-label">Quality Gates</div>`;
-    [qual.gate_a, qual.gate_b, qual.gate_c].filter(Boolean).forEach(g => {
-      const dotColor = g.passed === true ? '#00ff87' : g.passed === false ? '#ff4757' : '#ffd700';
-      let info = '';
-      if (g.edge_pct) info += `<span class="gate-info" style="color:#00ff87">${g.edge_pct}%</span>`;
-      if (g.confidence) info += `<span class="gate-info" style="color:#ffd700;margin-left:6px">${g.confidence}</span>`;
-      if (g.trap_codes) info += g.trap_codes.map(t=>`<span class="gate-info" style="color:#ff4757;margin-left:6px">${t}</span>`).join('');
-      html += `<div class="gate-row"><div class="gate-dot" style="background:${dotColor}"></div><span class="gate-name">${g.gate||'?'}</span>${info}</div>`;
-    });
+    if (contextFlags.length > 0) {
+      html += `<div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px">`;
+      contextFlags.forEach(f => {
+        html += `<span class="flag-pill" style="background:#9b59b622;color:#9b59b6;border:1px solid #9b59b644;font-size:11px;padding:3px 10px">${f}</span>`;
+      });
+      html += `</div>`;
+    }
+
+    // Edge Quality quick row under signals
+    if (edgeData) {
+      const hrColor = hitC(edgeHit);
+      const edgeLabelColor = edgeCode === 'EDGE_DEATH' ? '#ff4757' : '#ffd700';
+      const edgeLabelBg = edgeCode === 'EDGE_DEATH' ? '#ff475722' : '#ffd70022';
+      html += `<div style="margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.06);display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+        <div style="font-size:12px;color:#888">
+          Edge Quality:
+          <strong class="mono" style="color:${hrColor}">${edgeHit!=null?edgeHit.toFixed(0)+'%':'—'}</strong>
+          <span style="color:#555">${edgeN!=null?'(n='+edgeN+')':''}</span>
+          <span style="color:#777">${edgeBucket?(' • bucket '+edgeBucket):''}</span>
+          <span style="color:#777">${(edgePct!=null)?(' • edge '+edgePct.toFixed(1)+'%'):''}</span>
+          <span style="color:#777">${edgeHook===true?' • hook':''}</span>
+        </div>
+        <span class="pill" style="font-size:11px;padding:3px 10px;background:${edgeLabelBg};color:${edgeLabelColor};border:1px solid ${edgeLabelColor}44">
+          ${edgeCode || 'EDGE_QUALITY'}
+        </span>
+      </div>`;
+    }
+
+    html += `<div style="padding-top:8px;border-top:1px solid rgba(255,255,255,0.06);display:flex;justify-content:space-between;align-items:center">
+      <div style="font-size:12px;color:#888">Market says <strong style="color:${mktColor}">${cl.direction||'—'}</strong> · Model says <strong style="color:${dirColor}">${projDir||'—'}</strong></div>
+      <span class="pill" style="font-size:11px;padding:3px 10px;background:${dc.relationship==='FADE'?'#ff9f4322':dc.relationship==='CONFIRM'?'#00ff8722':'#55555522'};color:${dc.relationship==='FADE'?'#ff9f43':dc.relationship==='CONFIRM'?'#00ff87':'#888'};border:1px solid ${dc.relationship==='FADE'?'#ff9f4344':dc.relationship==='CONFIRM'?'#00ff8744':'#55555544'}">${dc.relationship||'—'}</span>
+    </div>`;
     html += `</div>`;
-  }
 
-  // LATTICE
-  if (Object.keys(lat).length > 0) {
-    html += `<div class="card"><div class="section-label">Lattice</div><div class="lattice-row">`;
-    Object.entries(lat).forEach(([k,v]) => {
-      html += `<div class="lattice-item"><div class="lattice-key">${k}</div><div class="lattice-val">${v===null?'—':v}</div></div>`;
+    // STAT BOXES
+    const confVal = conf.model_confidence || cl.confidence || 0;
+    const bdColor = (mot.birth_delta||0) > 0 ? '#00ff87' : (mot.birth_delta||0) < 0 ? '#ff4757' : '#888';
+
+    const hrColor = hitC(edgeHit);
+    const edgeSub = edgeData
+      ? `${edgeBucket ? edgeBucket : '—'}${edgeN!=null ? ' • n=' + edgeN : ''}`
+      : 'no data';
+
+    html += `<div class="stat-row">
+      <div class="stat-box">
+        <div class="stat-label">Confidence</div>
+        <div class="stat-value" style="color:${c(confVal)}">${(confVal*100).toFixed(0)}%</div>
+        <div class="stat-sub" style="color:#555">${stab.stability_state||'—'}</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-label">Regime</div>
+        <div style="font-size:22px;font-weight:700;color:${regimeC(cl.regime_tag)}">${cl.regime_tag||'—'}</div>
+        <div class="stat-sub" style="color:${sigC(dc.relationship)};font-weight:700">${dc.relationship||'—'}</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-label">LM Score</div>
+        <div class="stat-value" style="color:${bucketC(lms.bucket)}">${(lms.score||0).toFixed(1)}</div>
+        <div class="stat-sub" style="color:${bucketC(lms.bucket)}">${lms.bucket||'—'}</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-label">Birth Δ</div>
+        <div class="stat-value" style="color:${bdColor}">${(mot.birth_delta||0)>0?'+':''}${mot.birth_delta||0}</div>
+        <div class="stat-sub" style="color:#555">${cl.velocity||'—'}</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-label">Edge Quality</div>
+        <div class="stat-value" style="color:${hrColor}">${edgeHit!=null ? edgeHit.toFixed(0)+'%' : '—'}</div>
+        <div class="stat-sub" style="color:${edgeCode==='EDGE_DEATH'?'#ff4757':'#555'}">${edgeSub}</div>
+      </div>
+    </div>`;
+
+    // GAME PRESSURE
+    let pressureItems = '';
+    if (rb.moneyline_delta) pressureItems += `<div class="pressure-item"><div class="pressure-label">ML DELTA</div><div class="pressure-value" style="color:${rb.moneyline_delta<0?'#ff9f43':'#4ecdc4'}">${rb.moneyline_delta>0?'+':''}${rb.moneyline_delta}</div></div>`;
+    if (rb.total_delta) pressureItems += `<div class="pressure-item"><div class="pressure-label">TOTAL Δ</div><div class="pressure-value" style="color:#e0e0e0">${rb.total_delta>0?'+':''}${rb.total_delta}</div></div>`;
+    if (ge.spread) pressureItems += `<div class="pressure-item"><div class="pressure-label">SPREAD</div><div class="pressure-value" style="color:#e0e0e0">${ge.spread}</div></div>`;
+    if (ge.environment) pressureItems += `<div class="pressure-item"><div class="pressure-label">GAME ENV</div><div style="font-size:13px;font-weight:700;color:${ge.environment==='BLOWOUT_LIKELY'?'#ff4757':ge.environment==='COMFORTABLE'?'#4ecdc4':'#ffd700'}">${ge.environment}</div></div>`;
+    if (ge.blowout_prob!=null) pressureItems += `<div class="pressure-item"><div class="pressure-label">BLOWOUT %</div><div class="pressure-value" style="color:${ge.blowout_prob>0.4?'#ff4757':'#4ecdc4'}">${(ge.blowout_prob*100).toFixed(0)}%</div></div>`;
+    if (formCode) pressureItems += `<div class="pressure-item"><div class="pressure-label">FORM</div><div style="font-size:13px;font-weight:700;color:${formCode.includes('HOT')?'#00ff87':formCode.includes('COLD')?'#ff4757':'#ffd700'}">${formCode}</div></div>`;
+    if (rf.cv!=null) pressureItems += `<div class="pressure-item"><div class="pressure-label">CV (STREAK)</div><div class="pressure-value" style="color:#e0e0e0">${rf.cv.toFixed(3)}</div></div>`;
+    if (pressureItems) html += `<div class="card"><div class="section-label">Game Pressure</div><div class="pressure-row">${pressureItems}</div></div>`;
+
+    // STORY TIMELINE
+    if (beats.length > 0) {
+      let beatsHtml = '';
+      beats.forEach(b => {
+        const color = beatC(b.beat_type);
+        const facts = b.facts || {};
+        let detail = '';
+        if (b.beat_type === 'LINEUP_CHANGE') detail = `${facts.player_name||'?'} → ${facts.change_type||'?'}`;
+        else if (b.beat_type === 'LINE_MOVE') detail = `${facts.snapshot_type||'?'}: ${facts.previous_value||'?'} → ${facts.value||'?'} (${facts.delta>0?'+':''}${facts.delta||0})`;
+        beatsHtml += `<div class="beat"><div class="beat-dot" style="background:${color}"></div><span class="beat-type" style="color:${color}">${b.beat_type}</span><span class="beat-detail">${detail}</span></div>`;
+      });
+      html += `<div class="card"><div class="section-label">Signal Story</div>${loom.headline?`<div style="font-size:12px;color:#e0e0e0;margin-bottom:10px;font-style:italic">"${loom.headline}"</div>`:''}
+      <div class="timeline"><div class="timeline-line"></div>${beatsHtml}</div></div>`;
+    }
+
+    // LINE MOVEMENT + PLATFORMS
+    const curPlats = (plat.platforms) || {};
+    const hasBirthPlats = Object.keys(birthPlats).length > 0;
+    const hasCurPlats = Object.keys(curPlats).length > 0;
+
+    let allLines = [];
+    if (hasCurPlats) allLines.push(...Object.values(curPlats));
+    if (hasBirthPlats) {
+      Object.values(birthPlats).forEach(v => {
+        if (typeof v === 'object' && v !== null) allLines.push(v.line);
+        else if (typeof v === 'number') allLines.push(v);
+      });
+    }
+    const barMin = allLines.length ? Math.min(...allLines) * 0.9 : 0;
+    const barMax = allLines.length ? Math.max(...allLines) * 1.05 : 1;
+
+    let realBirthDelta = mot.birth_delta || 0;
+    if (hasBirthPlats && hasCurPlats) {
+      let totalDelta = 0; let count = 0;
+      Object.keys(curPlats).forEach(book => {
+        const curVal = curPlats[book];
+        let birthVal = null;
+        if (birthPlats[book] !== undefined) {
+          birthVal = typeof birthPlats[book] === 'object' ? birthPlats[book].line : birthPlats[book];
+        }
+        if (birthVal !== null && birthVal !== undefined) {
+          totalDelta += (curVal - birthVal);
+          count++;
+        }
+      });
+      if (count > 0) realBirthDelta = totalDelta / count;
+    }
+
+    const displayBirth = mot.birth_line || line;
+    const displayCurrent = mot.current_line || line;
+    const displayDelta = realBirthDelta !== 0 ? realBirthDelta : (mot.birth_delta || 0);
+
+    html += `<div class="card"><div class="section-label">Line Movement</div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <div><span style="color:#888;font-size:12px">Birth: </span><span class="mono" style="font-size:17px;font-weight:700;color:#e0e0e0">${displayBirth}</span></div>
+        <div style="color:${displayDelta>0?'#00ff87':displayDelta<0?'#ff4757':'#888'};font-size:18px;font-weight:700">→ ${displayDelta>0?'+':''}${displayDelta.toFixed(1)}</div>
+        <div><span style="color:#888;font-size:12px">Now: </span><span class="mono" style="font-size:17px;font-weight:700;color:#fff">${displayCurrent}</span></div>
+      </div>`;
+
+    const platformChanges = (bc.platform_line_changes) || {};
+    if (hasCurPlats) {
+      const books = Object.keys(curPlats).sort((a,b) => curPlats[b] - curPlats[a]);
+      books.forEach(book => {
+        const curVal = curPlats[book];
+        let birthVal = null;
+        if (birthPlats[book] !== undefined) {
+          birthVal = typeof birthPlats[book] === 'object' ? birthPlats[book].line : birthPlats[book];
+        }
+        const bookDelta = birthVal !== null && birthVal !== undefined ? curVal - birthVal : null;
+        const pColor = curVal > (plat.consensus_line||line) ? '#ff6b6b' : curVal === (plat.consensus_line||line) ? '#ffd700' : '#4ecdc4';
+        const barWidth = ((curVal - barMin) / (barMax - barMin)) * 100;
+
+        let deltaStr = '';
+        if (bookDelta !== null && bookDelta !== 0) {
+          const dColor = bookDelta > 0 ? '#00ff87' : '#ff4757';
+          deltaStr = `<span class="mono" style="color:${dColor};font-size:10px;margin-left:6px">${bookDelta>0?'+':''}${bookDelta.toFixed(1)}</span>`;
+        } else if (birthVal === null || birthVal === undefined) {
+          deltaStr = `<span style="color:#3498db;font-size:10px;margin-left:6px">NEW</span>`;
+        }
+
+        let birthStr = '';
+        if (birthVal !== null && birthVal !== undefined) {
+          birthStr = `<span class="platform-birth">${birthVal}</span><span class="platform-arrow">→</span>`;
+        }
+
+        let changesStr = '';
+        const bookChanges = platformChanges[book] || platformChanges[book.toLowerCase()] || [];
+        if (bookChanges.length > 0) {
+          const steps = bookChanges.map(ch => {
+            const chColor = ch.change_from !== undefined ? (ch.line > ch.change_from ? '#00ff87' : '#ff4757') : '#888';
+            return `<span style="color:${chColor}">${ch.line}</span>`;
+          });
+          changesStr = `<span class="platform-changes">[${steps.join(' → ')}]</span>`;
+        }
+
+        html += `<div class="platform-row">
+          <span class="platform-name">${book.toUpperCase()}</span>
+          <div class="platform-track">
+            <div class="platform-fill" style="width:${barWidth}%;background:linear-gradient(90deg,${pColor}88,${pColor})"></div>
+          </div>
+          ${birthStr}
+          <span class="platform-val">${curVal}</span>
+          ${deltaStr}
+          ${changesStr}
+        </div>`;
+      });
+    }
+    html += `</div>`;
+
+    // MODULE BREAKDOWN (vs line)
+    html += `<div class="card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+      <div class="section-label" style="margin-bottom:0">Module Breakdown</div>
+      <div style="font-size:12px"><span style="color:#00ff87;font-weight:700">${overCount} OVER</span><span style="color:#555;margin:0 5px">|</span><span style="color:#ff4757;font-weight:700">${underCount} UNDER</span></div>
+    </div>`;
+    modDeltas.forEach(m => {
+      const delta = m.value - m.line;
+      const dir = delta > 0 ? 'OVER' : delta < 0 ? 'UNDER' : 'PUSH';
+      const dColor = dir==='OVER'?'#00ff87':dir==='UNDER'?'#ff4757':'#a0a0a0';
+      html += `<div class="simple-row"><span class="simple-label">${m.label}</span><span class="simple-val">${typeof m.value==='number'?m.value.toFixed(1):m.value}</span><span class="simple-delta" style="color:${dColor}">${delta>0?'+':''}${delta.toFixed(1)} ${dir}</span></div>`;
     });
-    html += `</div></div>`;
+
+    let ctxHtml = '';
+    if (modules.REST && modules.REST.is_b2b) ctxHtml += `<span class="ctx-pill" style="background:#ff475722;color:#ff4757">B2B</span>`;
+    if (modules.REST && !modules.REST.is_b2b && modules.REST.days_rest > 1) ctxHtml += `<span class="ctx-pill" style="background:#00ff8722;color:#00ff87">REST: ${modules.REST.days_rest}d</span>`;
+    if (modules.DEFENSE) ctxHtml += `<span class="ctx-pill" style="background:${modules.DEFENSE.tier==='POOR'||modules.DEFENSE.tier==='WEAK'?'#00ff8722':'#55555522'};color:${modules.DEFENSE.tier==='POOR'||modules.DEFENSE.tier==='WEAK'?'#00ff87':'#888'}">DEF: ${modules.DEFENSE.tier} (#${modules.DEFENSE.defense_rank})</span>`;
+    if (ge.environment) ctxHtml += `<span class="ctx-pill" style="background:#ffd70022;color:#ffd700">${ge.environment} (${(ge.blowout_prob*100).toFixed(0)}%)</span>`;
+    if (ge.player_role) ctxHtml += `<span class="ctx-pill" style="background:#55555522;color:#888">ROLE: ${ge.player_role}</span>`;
+    if (ctxHtml) html += `<div class="ctx-pills">${ctxHtml}</div>`;
+    html += `</div>`;
+
+    // NET DELTA GAUGE
+    if (netDelta !== null) {
+      const ndColor = netDelta > 0 ? '#00ff87' : netDelta < 0 ? '#ff4757' : '#888';
+      const ndDir = netDelta > 0 ? 'OVER' : netDelta < 0 ? 'UNDER' : 'NEUTRAL';
+      const mismatch = projDir && ndDir !== projDir && ndDir !== 'NEUTRAL';
+      html += `<div class="net-gauge" style="background:${mismatch?'linear-gradient(135deg,#12121a,#2a1a1a)':'linear-gradient(135deg,#12121a,#1a1a2e)'};border:2px solid ${mismatch?'#ff6b6b66':ndColor+'44'}">
+        <div class="section-label">Net Delta</div>
+        <div class="net-value" style="color:${ndColor}">${netDelta>0?'+':''}${netDelta.toFixed(4)}</div>
+        <div class="net-dir" style="color:${ndColor}">${ndDir}</div>
+        ${mismatch?`<div class="mismatch"><span>⚠ MISMATCH — Net Delta says ${ndDir} but Projection says ${projDir}</span></div>`:''}
+        <div class="net-stats">
+          <div><div class="net-stat-label">WEIGHTED</div><div class="net-stat-val">${weightedDelta>0?'+':''}${weightedDelta.toFixed(4)}</div></div>
+          <div><div class="net-stat-label">MODULES</div><div class="net-stat-val">${agg.non_zero_modules||0}/15</div></div>
+          <div><div class="net-stat-label">AVG RELIABILITY</div><div class="net-stat-val">${((agg.avg_reliability||0)*100).toFixed(1)}%</div></div>
+        </div>
+      </div>`;
+    }
+
+    // MODULE DELTA BARS
+    if (urdrMods.length > 0) {
+      html += `<div class="card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <div class="section-label" style="margin-bottom:0">Module Delta Logit (OVER ←→ UNDER)</div>
+        <div style="font-size:10px;color:#555">reliability →</div>
+      </div>`;
+      const maxD = 0.6;
+      activeMods.forEach(m => {
+        const dd = m.delta_logit_over;
+        const pct = Math.min(Math.abs(dd)/maxD,1)*100;
+        const isOver = dd > 0;
+        const color = isOver ? '#00ff87' : '#ff4757';
+        const relColor = m.reliability > 0.7 ? '#4ecdc4' : m.reliability > 0.4 ? '#ffd700' : '#555';
+        const fillStyle = isOver ? `left:50%;width:${pct/2}%` : `right:50%;width:${pct/2}%`;
+        html += `<div class="mod-row">
+          <span class="mod-name">${(m.code||'').replace(/_/g,' ')}</span>
+          <div class="mod-track"><div class="mod-center"></div><div class="mod-fill" style="${fillStyle};background:${color}aa"></div></div>
+          <span class="mod-val" style="color:${color}">${dd>0?'+':''}${dd.toFixed(4)}</span>
+          <span class="mod-rel" style="color:${relColor}">${(m.reliability*100).toFixed(0)}%</span>
+        </div>`;
+      });
+      if (zeroMods.length > 0) {
+        html += `<div class="zero-mods">ZERO IMPACT: ${zeroMods.map(m=>(m.code||'').replace(/_/g,' ')).join(', ')}</div>`;
+      }
+      html += `</div>`;
+    }
+
+    // QUALITY GATES
+    if (qual.gate_a || qual.gate_b || qual.gate_c) {
+      html += `<div class="card"><div class="section-label">Quality Gates</div>`;
+      [qual.gate_a, qual.gate_b, qual.gate_c].filter(Boolean).forEach(g => {
+        const dotColor = g.passed === true ? '#00ff87' : g.passed === false ? '#ff4757' : '#ffd700';
+        let info = '';
+        if (g.edge_pct) info += `<span class="gate-info" style="color:#00ff87">${g.edge_pct}%</span>`;
+        if (g.confidence) info += `<span class="gate-info" style="color:#ffd700;margin-left:6px">${g.confidence}</span>`;
+        if (g.trap_codes) info += g.trap_codes.map(t=>`<span class="gate-info" style="color:#ff4757;margin-left:6px">${t}</span>`).join('');
+        html += `<div class="gate-row"><div class="gate-dot" style="background:${dotColor}"></div><span class="gate-name">${g.gate||'?'}</span>${info}</div>`;
+      });
+      html += `</div>`;
+    }
+
+    // LATTICE
+    if (Object.keys(lat).length > 0) {
+      html += `<div class="card"><div class="section-label">Lattice</div><div class="lattice-row">`;
+      Object.entries(lat).forEach(([k,v]) => {
+        html += `<div class="lattice-item"><div class="lattice-key">${k}</div><div class="lattice-val">${v===null?'—':v}</div></div>`;
+      });
+      html += `</div></div>`;
+    }
+
+    // VERDICT
+    html += `<div class="verdict" style="border:2px solid ${dirColor}44">
+      <div class="section-label" style="letter-spacing:2px">COLD READ SUMMARY</div>
+      <div style="font-size:13px;color:#888">
+        Modules: <strong style="color:#00ff87">${overCount}</strong> OVER / <strong style="color:#ff4757">${underCount}</strong> UNDER vs line ${line}
+      </div>
+      <div style="font-size:13px;color:#888;margin-top:4px">
+        Net Delta: <strong class="mono" style="color:${netDelta>0?'#00ff87':netDelta<0?'#ff4757':'#888'}">${netDelta!==null?(netDelta>0?'+':'')+netDelta.toFixed(4):'—'}</strong>
+         · Weighted: <strong class="mono" style="color:${weightedDelta>0?'#00ff87':weightedDelta<0?'#ff4757':'#888'}">${weightedDelta>0?'+':''}${weightedDelta.toFixed(4)}</strong>
+      </div>
+    </div>`;
+
+    // RAW JSON
+    if (showRaw) {
+      html += `<div class="card"><div class="section-label">Raw JSON</div><pre style="color:#888;font-size:10px;overflow:auto;max-height:400px;font-family:'JetBrains Mono',monospace;white-space:pre-wrap;word-break:break-all">${JSON.stringify(currentCard,null,2)}</pre></div>`;
+    }
+
+    document.getElementById('dashboard').innerHTML = html;
+  } catch(e) {
+    document.getElementById('dashboard').innerHTML = '<div style="color:#ff4757;padding:20px">Render error: '+e.message+'</div>';
+    console.error(e);
   }
-
-  // VERDICT
-  html += `<div class="verdict" style="border:2px solid ${dirColor}44">
-    <div class="section-label" style="letter-spacing:2px">COLD READ SUMMARY</div>
-    <div style="font-size:13px;color:#888">
-      Modules: <strong style="color:#00ff87">${overCount}</strong> OVER / <strong style="color:#ff4757">${underCount}</strong> UNDER vs line ${line}
-    </div>
-    <div style="font-size:13px;color:#888;margin-top:4px">
-      Net Delta: <strong class="mono" style="color:${netDelta>0?'#00ff87':netDelta<0?'#ff4757':'#888'}">${netDelta!==null?(netDelta>0?'+':'')+netDelta.toFixed(4):'—'}</strong>
-       · Weighted: <strong class="mono" style="color:${weightedDelta>0?'#00ff87':weightedDelta<0?'#ff4757':'#888'}">${weightedDelta>0?'+':''}${weightedDelta.toFixed(4)}</strong>
-    </div>
-  </div>`;
-
-  // RAW JSON
-  if (showRaw) {
-    html += `<div class="card"><div class="section-label">Raw JSON</div><pre style="color:#888;font-size:10px;overflow:auto;max-height:400px;font-family:'JetBrains Mono',monospace;white-space:pre-wrap;word-break:break-all">${JSON.stringify(currentCard,null,2)}</pre></div>`;
-  }
-
-  document.getElementById('dashboard').innerHTML = html;
-  } catch(e) { document.getElementById('dashboard').innerHTML = '<div style="color:#ff4757;padding:20px">Render error: '+e.message+'</div>'; console.error(e); }
 }
 
 // Init
